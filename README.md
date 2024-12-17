@@ -1,0 +1,2 @@
+# Splendor
+Splendor AI Bot
