@@ -79,15 +79,10 @@ if __name__ == "__main__":
             break
 
         try:
-            symbol = input("Enter the symbol for this agent (X or O): ").strip().upper()
-            if symbol not in ["X", "O"]:
-                print("Invalid symbol. Please choose either X or O.")
-                continue
-
-            agent = QLearningAgent(symbol=symbol)
+            agent = QLearningAgent(symbol=None)  # Symbol will be set later
             agent.load(filename)
             agents[filename] = agent
-            print(f"Loaded agent from {filename} with symbol {symbol}.")
+            print(f"Loaded agent from {filename}.")
         except Exception as e:
             print(f"Error loading agent: {e}")
 
@@ -119,31 +114,48 @@ if __name__ == "__main__":
                 agent1 = list(agents.values())[agent1_idx]
                 agent2 = list(agents.values())[agent2_idx]
 
-                game = TicTacToe()
+                agent1.symbol = input("Enter the symbol for the first agent (X or O): ").strip().upper()
+                while agent1.symbol not in ["X", "O"]:
+                    print("Invalid symbol. Please choose either X or O.")
+                    agent1.symbol = input("Enter the symbol for the first agent (X or O): ").strip().upper()
 
-                play_again = "y"
-                while play_again.lower() == "y":
+                agent2.symbol = "O" if agent1.symbol == "X" else "X"
+
+                num_games = int(input("Enter the number of games to play: ").strip())
+
+                agent1_wins = 0
+                agent2_wins = 0
+                ties = 0
+
+                for game_num in range(1, num_games + 1):
+                    print(f"\nGame {game_num}:")
+                    game = TicTacToe()
                     game.reset()
-                    print("Starting a new AI vs. AI game!")
-
                     current_player = agent1
 
                     while not game.winner:
                         move = current_player.choose_action(game.board)
                         game.make_move(move, current_player.symbol)
                         game.render()
-
                         winner = game.check_winner()
                         if winner:
                             if winner == "Tie":
+                                ties += 1
                                 print("It's a tie!")
+                            elif winner == agent1.symbol:
+                                agent1_wins += 1
+                                print(f"Agent {agent1.symbol} wins!")
                             else:
-                                print(f"Agent {winner} wins!")
+                                agent2_wins += 1
+                                print(f"Agent {agent2.symbol} wins!")
                             break
 
                         current_player = agent2 if current_player == agent1 else agent1
 
-                    play_again = input("Do you want to play another AI vs. AI game? (y/n): ")
+                print(f"\nStatistics after {num_games} games:")
+                print(f"Agent {agent1.symbol} wins: {agent1_wins}")
+                print(f"Agent {agent2.symbol} wins: {agent2_wins}")
+                print(f"Ties: {ties}")
 
             except (ValueError, IndexError):
                 print("Invalid selection. Please try again.")
@@ -156,6 +168,11 @@ if __name__ == "__main__":
             try:
                 agent_idx = int(input("Select an AI agent to play against (by number): ")) - 1
                 agent = list(agents.values())[agent_idx]
+
+                agent.symbol = input("Enter the symbol for the AI agent (X or O): ").strip().upper()
+                while agent.symbol not in ["X", "O"]:
+                    print("Invalid symbol. Please choose either X or O.")
+                    agent.symbol = input("Enter the symbol for the AI agent (X or O): ").strip().upper()
 
                 human_symbol = "O" if agent.symbol == "X" else "X"
 
